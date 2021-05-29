@@ -3,38 +3,69 @@ package com.racer.game;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import org.graalvm.compiler.word.Word;
+
+import java.util.Random;
+
 public class Rock {
-
-    // rock characteristics
-    float movementSpeed; // world units per second
-
 
     // position & dimension
     // (lower-left corner)
     float xPosition,yPosition;
     float width,height;
+    //float rockOffset;
+    int WORLD_HEIGHT;
+    int WORLD_WIDTH;
+    int yPositionInitialOffset;
+
+    final int X_POS_PADDING=5;
 
     // graphics information
     TextureRegion rockTextureRegion;
 
-
     // position - center of the rock
-    public Rock(float movementSpeed, float xCenter,
-                float yCenter, float width,
-                float height,
-                TextureRegion rockTexture) {
+    public Rock(int yPositionInitialOffset,float width,float height,
+                TextureRegion rockTexture,int WORLD_WIDTH,int WORLD_HEIGHT) {
 
-        this.movementSpeed = movementSpeed;
-        this.xPosition = xCenter - width/2;
-        this.yPosition = yCenter - height/2;
+        //this.xPosition = xCenter - width/2;
+        //this.yPosition = yCenter - height/2;
+
         this.width = width;
         this.height = height;
         this.rockTextureRegion = rockTexture;
+
+        this.WORLD_HEIGHT = WORLD_HEIGHT;
+        this.WORLD_WIDTH = WORLD_WIDTH;
+
+        this.xPosition = GetRandomXPos();
+        this.yPosition = WORLD_HEIGHT + yPositionInitialOffset;
+
     }
 
     public void draw(Batch batch)
     {
         batch.draw(rockTextureRegion,xPosition,yPosition,width,height);
+    }
 
+    public void draw(Batch batch,float backgroundMaxScrollingSpeed,float deltaTime)
+    {
+        this.yPosition -= deltaTime * backgroundMaxScrollingSpeed;
+
+        if(this.yPosition+this.height < 0)
+        {
+            this.yPosition = WORLD_HEIGHT;
+            this.xPosition = GetRandomXPos();
+        }
+
+        batch.draw(rockTextureRegion,xPosition,yPosition,width,height);
+
+    }
+
+    private int GetRandomXPos()
+    {
+        Random rand = new Random();
+        int result = rand.nextInt(WORLD_WIDTH-(2*X_POS_PADDING));
+        result+=X_POS_PADDING/2;
+        return result;
     }
 }

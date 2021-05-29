@@ -10,6 +10,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GameScreen implements Screen {
 
     // screen stuff
@@ -33,7 +36,9 @@ public class GameScreen implements Screen {
     private final int WORLD_HEIGHT = 128;
 
     // game objects
-    private Rock rock1;
+    //private Rock rock1;
+    private List<Rock> rocks;
+
     private Car car;
 
 
@@ -47,7 +52,7 @@ public class GameScreen implements Screen {
         backgrounds = new TextureRegion[1];
         backgrounds[0] = textureAtlas.findRegion("sandRoad");
 
-        backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/4;
+        backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/2;
 
         // initialize texture regions
         rockTextureRegion = textureAtlas.findRegion("rock1");
@@ -56,8 +61,14 @@ public class GameScreen implements Screen {
 
 
         // game objects setup
-        rock1 = new Rock(2,WORLD_WIDTH/2,WORLD_HEIGHT*9/10,12,12,rockTextureRegion);
-        car = new Car(2,WORLD_WIDTH/2,WORLD_HEIGHT*1/4,12,18,playerCarTextureRegion);
+        rocks = new ArrayList<Rock>();
+        rocks.add(new Rock(WORLD_HEIGHT*3/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
+        rocks.add(new Rock(WORLD_HEIGHT*2/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
+        rocks.add(new Rock(WORLD_HEIGHT*1/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
+        rocks.add(new Rock(0,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
+
+        car = new Car(2,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
+
 
         batch = new SpriteBatch();
     }
@@ -70,8 +81,9 @@ public class GameScreen implements Screen {
         renderBackground(deltaTime);
 
         // rocks
-        rock1.draw(batch);
-
+        for (Rock r: rocks) {
+            r.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
+        }
 
         // player's car
         car.draw(batch);
@@ -130,7 +142,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-
     }
 
     @Override
