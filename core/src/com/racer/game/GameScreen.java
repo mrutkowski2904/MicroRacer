@@ -1,5 +1,7 @@
 package com.racer.game;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -16,16 +18,15 @@ import java.util.List;
 public class GameScreen implements Screen {
 
     // screen stuff
-    private Camera camera;
-    private Viewport viewport;
+    final private Camera camera;
+    final private Viewport viewport;
 
     // graphics
-    private SpriteBatch batch;
-    private TextureAtlas textureAtlas;
+    final private SpriteBatch batch;
+    final private TextureAtlas textureAtlas;
 
     private TextureRegion[] backgrounds;
-    private TextureRegion playerCarTextureRegion, rockTextureRegion;
-
+    private TextureRegion playerCarTextureRegion, rockTextureRegion,ufoTextureRegion;
 
     // timing stuff
     private float[] backgroundOffsets={0};
@@ -38,7 +39,7 @@ public class GameScreen implements Screen {
     // game objects
     //private Rock rock1;
     private List<Rock> rocks;
-
+    private Ufo ufo;
     private Car car;
 
 
@@ -52,13 +53,16 @@ public class GameScreen implements Screen {
         backgrounds = new TextureRegion[1];
         backgrounds[0] = textureAtlas.findRegion("sandRoad");
 
+
         backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/2;
 
         // initialize texture regions
         rockTextureRegion = textureAtlas.findRegion("rock1");
         playerCarTextureRegion = textureAtlas.findRegion("redCar");
-        playerCarTextureRegion.flip(false,true);
+        ufoTextureRegion = textureAtlas.findRegion("ufo");
 
+        playerCarTextureRegion.flip(false,true);
+        ufoTextureRegion.flip(true,false);
 
         // game objects setup
         rocks = new ArrayList<Rock>();
@@ -67,8 +71,8 @@ public class GameScreen implements Screen {
         rocks.add(new Rock(WORLD_HEIGHT*1/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
         rocks.add(new Rock(0,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
 
-        car = new Car(2,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
-
+        car = new Car(90,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
+        ufo = new Ufo(-WORLD_WIDTH*2,WORLD_HEIGHT*4/6,35,35,WORLD_HEIGHT,WORLD_WIDTH,ufoTextureRegion);
 
         batch = new SpriteBatch();
     }
@@ -76,6 +80,8 @@ public class GameScreen implements Screen {
     @Override
     public void render(float deltaTime) {
         batch.begin();
+
+        detectInput(deltaTime);
 
         // background
         renderBackground(deltaTime);
@@ -89,13 +95,49 @@ public class GameScreen implements Screen {
         car.draw(batch);
 
 
-
-        // speed effect
+        // other effects
+        ufo.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
 
         // explosions
 
 
+        detectColision();
+
         batch.end();
+    }
+
+    private void detectInput(float deltaTime) {
+        // keyboard
+        float leftLimit,rightLimit;
+        leftLimit = -car.getBoundingBox().x;
+        rightLimit = WORLD_WIDTH - car.getBoundingBox().x - car.width;
+
+        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit>0)
+        {
+            float xChange = car.movementSpeed*deltaTime;
+            xChange = Math.min(xChange,rightLimit);
+            car.translate(xChange,0f);
+        }
+
+        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit<0)
+        {
+            float xChange = car.movementSpeed*deltaTime;
+            xChange = Math.max(xChange,leftLimit);
+            car.translate(-xChange,0f);
+        }
+
+        //touch
+
+    }
+
+    private void detectColision()
+    {
+        for (Rock rock: rocks) {
+            if(car.touchesRock(rock.getBoundingBox()))
+            {
+                System.out.println("Player hits rock");
+            }
+        }
     }
 
     private void renderBackground(float deltaTime){

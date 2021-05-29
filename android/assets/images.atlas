@@ -6,22 +6,29 @@ filter: Nearest, Nearest
 repeat: none
 redCar
   rotate: false
-  xy: 0, 826
+  xy: 0, 1077
   size: 1333, 2400
   orig: 1333, 2400
   offset: 0, 0
   index: -1
 rock1
   rotate: false
-  xy: 1333, 2975
+  xy: 0, 0
   size: 361, 251
   orig: 361, 251
   offset: 0, 0
   index: -1
 sandRoad
   rotate: false
-  xy: 0, 0
+  xy: 0, 251
   size: 835, 826
   orig: 835, 826
+  offset: 0, 0
+  index: -1
+ufo
+  rotate: false
+  xy: 1333, 3141
+  size: 345, 336
+  orig: 345, 336
   offset: 0, 0
   index: -1

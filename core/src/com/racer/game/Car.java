@@ -2,6 +2,7 @@ package com.racer.game;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 
 public class Car {
     // car characteristics
@@ -22,6 +23,23 @@ public class Car {
         this.width = width;
         this.height = height;
         this.carTextureRegion = carTextureRegion;
+    }
+
+    public boolean touchesRock(Rectangle rockRectangle)
+    {
+        Rectangle carRect = new Rectangle(this.xPosition,this.yPosition,this.width,this.height);
+        return carRect.overlaps(rockRectangle);
+    }
+
+    public Rectangle getBoundingBox()
+    {
+        return new Rectangle(xPosition,yPosition,width,height);
+    }
+
+    public void translate(float xChange,float yChange)
+    {
+        xPosition+=xChange;
+        yPosition+=yChange;
     }
 
     public void draw(Batch batch)

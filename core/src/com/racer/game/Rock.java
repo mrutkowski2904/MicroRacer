@@ -2,6 +2,7 @@ package com.racer.game;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 
 import org.graalvm.compiler.word.Word;
 
@@ -37,7 +38,7 @@ public class Rock {
         this.WORLD_HEIGHT = WORLD_HEIGHT;
         this.WORLD_WIDTH = WORLD_WIDTH;
 
-        this.xPosition = GetRandomXPos();
+        this.xPosition = getRandomXPos();
         this.yPosition = WORLD_HEIGHT + yPositionInitialOffset;
 
     }
@@ -54,14 +55,19 @@ public class Rock {
         if(this.yPosition+this.height < 0)
         {
             this.yPosition = WORLD_HEIGHT;
-            this.xPosition = GetRandomXPos();
+            this.xPosition = getRandomXPos();
         }
 
         batch.draw(rockTextureRegion,xPosition,yPosition,width,height);
 
     }
 
-    private int GetRandomXPos()
+    public Rectangle getBoundingBox()
+    {
+        return new Rectangle(xPosition,yPosition,width,height);
+    }
+
+    private int getRandomXPos()
     {
         Random rand = new Random();
         int result = rand.nextInt(WORLD_WIDTH-(2*X_POS_PADDING));
