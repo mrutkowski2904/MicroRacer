@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -16,8 +18,11 @@ public class GameScreen implements Screen {
 
     // graphics
     private SpriteBatch batch;
-    //private Texture background;
-    private Texture[] backgrounds;
+    private TextureAtlas textureAtlas;
+
+    private TextureRegion[] backgrounds;
+    private TextureRegion playerCarTextureRegion, rockTextureRegion;
+
 
     // timing stuff
     private float[] backgroundOffsets={0};
@@ -27,14 +32,27 @@ public class GameScreen implements Screen {
     private final int WORLD_WIDTH = 72;
     private final int WORLD_HEIGHT = 128;
 
+    // game objects
+    private Rock rock1;
+
+
     GameScreen(){
         camera = new OrthographicCamera();
         viewport = new StretchViewport(WORLD_WIDTH,WORLD_HEIGHT,camera);
 
-        backgrounds = new Texture[1];
-        backgrounds[0] = new Texture("sandRoad.png");
+        // set texture atlas
+        textureAtlas = new TextureAtlas("images.atlas");
+
+        backgrounds = new TextureRegion[1];
+        backgrounds[0] = textureAtlas.findRegion("sandRoad");
 
         backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/4;
+
+        // initialize texture regions
+        rockTextureRegion = textureAtlas.findRegion("rock1");
+
+        // game objects setup
+        rock1 = new Rock(2,WORLD_WIDTH/2,WORLD_HEIGHT/2,10,10,rockTextureRegion);
 
         batch = new SpriteBatch();
     }
@@ -43,7 +61,17 @@ public class GameScreen implements Screen {
     public void render(float deltaTime) {
         batch.begin();
 
+        // background
         renderBackground(deltaTime);
+
+        // rocks
+        rock1.draw(batch);
+        // player's car
+
+        // speed effect
+
+        // explosions
+
 
         batch.end();
     }
@@ -51,9 +79,9 @@ public class GameScreen implements Screen {
     private void renderBackground(float deltaTime){
 
         // the lowest layer
-        //backgroundOffsets[0] += deltaTime * backgroundMaxScrollingSpeed / 8;
-
         backgroundOffsets[0] += deltaTime * backgroundMaxScrollingSpeed;
+        //backgroundOffsets[1] += deltaTime * backgroundMaxScrollingSpeed/2;
+        //backgroundOffsets[2] += deltaTime * backgroundMaxScrollingSpeed/4;
 
         for(int layer =0;layer<backgroundOffsets.length;layer++)
         {
