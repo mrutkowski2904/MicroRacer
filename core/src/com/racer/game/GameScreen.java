@@ -34,6 +34,7 @@ public class GameScreen implements Screen {
 
     // game objects
     private Rock rock1;
+    private Car car;
 
 
     GameScreen(){
@@ -50,9 +51,13 @@ public class GameScreen implements Screen {
 
         // initialize texture regions
         rockTextureRegion = textureAtlas.findRegion("rock1");
+        playerCarTextureRegion = textureAtlas.findRegion("redCar");
+        playerCarTextureRegion.flip(false,true);
+
 
         // game objects setup
-        rock1 = new Rock(2,WORLD_WIDTH/2,WORLD_HEIGHT/2,10,10,rockTextureRegion);
+        rock1 = new Rock(2,WORLD_WIDTH/2,WORLD_HEIGHT*9/10,12,12,rockTextureRegion);
+        car = new Car(2,WORLD_WIDTH/2,WORLD_HEIGHT*1/4,12,18,playerCarTextureRegion);
 
         batch = new SpriteBatch();
     }
@@ -66,7 +71,12 @@ public class GameScreen implements Screen {
 
         // rocks
         rock1.draw(batch);
+
+
         // player's car
+        car.draw(batch);
+
+
 
         // speed effect
 
