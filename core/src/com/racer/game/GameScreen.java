@@ -16,10 +16,12 @@ public class GameScreen implements Screen {
 
     // graphics
     private SpriteBatch batch;
-    private Texture background;
+    //private Texture background;
+    private Texture[] backgrounds;
 
     // timing stuff
-    private int backgroundOffset;
+    private float[] backgroundOffsets={0};
+    private float backgroundMaxScrollingSpeed;
 
     // world stuff
     private final int WORLD_WIDTH = 72;
@@ -29,8 +31,10 @@ public class GameScreen implements Screen {
         camera = new OrthographicCamera();
         viewport = new StretchViewport(WORLD_WIDTH,WORLD_HEIGHT,camera);
 
-        background = new Texture("sandRoad.png");
-        backgroundOffset = 0;
+        backgrounds = new Texture[1];
+        backgrounds[0] = new Texture("sandRoad.png");
+
+        backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/4;
 
         batch = new SpriteBatch();
     }
@@ -39,17 +43,30 @@ public class GameScreen implements Screen {
     public void render(float deltaTime) {
         batch.begin();
 
-        // scrolling background
-        backgroundOffset++;
-        // when it gets too big
-        if(backgroundOffset % WORLD_HEIGHT == 0){
-            backgroundOffset = 0;
-        }
-
-        batch.draw(background,0,-backgroundOffset,WORLD_WIDTH,WORLD_HEIGHT);
-        batch.draw(background,0,-backgroundOffset+WORLD_HEIGHT,WORLD_WIDTH,WORLD_HEIGHT);
+        renderBackground(deltaTime);
 
         batch.end();
+    }
+
+    private void renderBackground(float deltaTime){
+
+        // the lowest layer
+        //backgroundOffsets[0] += deltaTime * backgroundMaxScrollingSpeed / 8;
+
+        backgroundOffsets[0] += deltaTime * backgroundMaxScrollingSpeed;
+
+        for(int layer =0;layer<backgroundOffsets.length;layer++)
+        {
+            // when it is too far
+            if(backgroundOffsets[layer] > WORLD_HEIGHT)
+            {
+                backgroundOffsets[layer] = 0;
+            }
+
+            // upper and lower part
+            batch.draw(backgrounds[layer],0,-backgroundOffsets[layer],WORLD_WIDTH,WORLD_HEIGHT);
+            batch.draw(backgrounds[layer],0,-backgroundOffsets[layer] + WORLD_HEIGHT ,WORLD_WIDTH,WORLD_HEIGHT);
+        }
     }
 
     @Override
