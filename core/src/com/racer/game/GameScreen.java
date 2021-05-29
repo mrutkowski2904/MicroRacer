@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -35,6 +36,8 @@ public class GameScreen implements Screen {
     // world stuff
     private final int WORLD_WIDTH = 72;
     private final int WORLD_HEIGHT = 128;
+    private final float TOUCH_MOVEMENT_THRESHOLD = 1f;
+
 
     // game objects
     //private Rock rock1;
@@ -107,6 +110,7 @@ public class GameScreen implements Screen {
     }
 
     private void detectInput(float deltaTime) {
+
         // keyboard
         float leftLimit,rightLimit;
         leftLimit = -car.getBoundingBox().x;
@@ -126,8 +130,37 @@ public class GameScreen implements Screen {
             car.translate(-xChange,0f);
         }
 
-        //touch
+        //touch and mouse
+        if(Gdx.input.isTouched())
+        {
+            // get screen position
+            float xTouchPixels = Gdx.input.getX();
+            float yTouchPixels = Gdx.input.getY();
 
+            // convert screen position to world units
+            Vector2 touchPoint = new Vector2(xTouchPixels,yTouchPixels);
+            Vector2 touchInWorld = viewport.unproject(touchPoint);
+            Vector2 carCenter = new Vector2(car.xPosition + car.width/2,car.yPosition+car.height/2);
+
+
+            // right
+            if(carCenter.x+TOUCH_MOVEMENT_THRESHOLD<touchInWorld.x && rightLimit>0)
+            {
+                float xChange = car.movementSpeed*deltaTime;
+                xChange = Math.min(xChange,rightLimit);
+                car.translate(xChange,0f);
+            }
+
+            // left
+            if(carCenter.x-TOUCH_MOVEMENT_THRESHOLD>touchInWorld.x && leftLimit<0)
+            {
+                float xChange = car.movementSpeed*deltaTime;
+                xChange = Math.max(xChange,leftLimit);
+                car.translate(-xChange,0f);
+            }
+
+
+        }
     }
 
     private void detectColision()
