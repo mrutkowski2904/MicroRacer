@@ -51,7 +51,9 @@ public class GameScreen implements Screen {
 
     // gameplay
     private int currentScore = 0;
-    private boolean gameActive = true;
+    private boolean gameActive = false;
+    private boolean menuActive = true;
+
 
     // game objects
     //private Rock rock1;
@@ -60,14 +62,17 @@ public class GameScreen implements Screen {
     private Car car;
     private LinkedList<Explosion> explosions;
 
-    // Score HUD
-    BitmapFont font;
-    float hudVerticalMargin,hudLeftX,hudRightX,hudCenterX;
+    // game stuff
+    BitmapFont scoreFont;
+    BitmapFont menuFont;
+    BitmapFont startGameFont;
 
+    GameMenu menu;
 
     GameScreen(){
         camera = new OrthographicCamera();
         viewport = new StretchViewport(WORLD_WIDTH,WORLD_HEIGHT,camera);
+        prepareFont();
 
         // set texture atlas
         textureAtlas = new TextureAtlas("images.atlas");
@@ -96,12 +101,14 @@ public class GameScreen implements Screen {
         rocks.add(new Rock(0,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
 
         car = new Car(90,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
-        ufo = new Ufo(-WORLD_WIDTH*2,WORLD_HEIGHT*4/6,35,35,WORLD_HEIGHT,WORLD_WIDTH,ufoTextureRegion);
+        ufo = new Ufo(-WORLD_WIDTH*2,WORLD_HEIGHT*5/7,35,35,WORLD_HEIGHT,WORLD_WIDTH,ufoTextureRegion);
         explosions = new LinkedList<>();
 
         batch = new SpriteBatch();
 
-        prepareScoreHUD();
+
+        menu = new GameMenu(WORLD_WIDTH/2,WORLD_HEIGHT*1.5f,WORLD_HEIGHT,WORLD_WIDTH,menuFont, startGameFont);
+
     }
 
     @Override
@@ -113,7 +120,7 @@ public class GameScreen implements Screen {
         // background
         renderBackground(deltaTime);
 
-        // game active
+        // gameplay
         if(gameActive)
         {
             // player's car
@@ -140,6 +147,11 @@ public class GameScreen implements Screen {
             updateAndRenderScoreHUD();
         }
 
+        // Menu
+        if(menuActive)
+        {
+            menu.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
+        }
         batch.end();
     }
 
@@ -220,11 +232,34 @@ public class GameScreen implements Screen {
             }
         }
 
+        if((Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.ANY_KEY))&& menuActive)
+        {
+            startGame();
+        }
+
+    }
+
+    private void startGame()
+    {
+        //menu.resetPosition();
+        menuActive = false;
+        gameActive = true;
+        for (Rock r: rocks) {
+            r.resetPosition();
+        }
+        car.resetPosition();
+    }
+
+    public void stopGame()
+    {
+        menu.resetPosition();
+        menuActive = true;
+        gameActive = false;
     }
 
     private void updateScore()
     {
-        currentScore += 1;
+        currentScore += 1 + (currentScore/8);
     }
 
     private void detectColision(float deltaTime)
@@ -241,7 +276,11 @@ public class GameScreen implements Screen {
                 explostionBox.setY(car.yPosition-car.height/2);
 
                 explosions.add(new Explosion(explosionTexture,explostionBox,TOTAL_ANIMATION_TIME));
-                gameActive = false;
+
+                // replace later with after crash screen
+                // todo, save score
+                currentScore = 0;
+                stopGame();
             }
         }
     }
@@ -272,10 +311,12 @@ public class GameScreen implements Screen {
         }
     }
 
-    private void prepareScoreHUD()
+    private void prepareFont()
     {
-        // Creating bitmap font from file
         FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
+
+        // Game font
+        // Creating bitmap font from file
         FreeTypeFontGenerator.FreeTypeFontParameter fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         fontParameter.size = 14;
@@ -284,17 +325,43 @@ public class GameScreen implements Screen {
         fontParameter.borderColor = new Color(0,0,0,0.9f);
         fontParameter.spaceX = 1;
 
-        font = fontGenerator.generateFont(fontParameter);
+        scoreFont = fontGenerator.generateFont(fontParameter);
         // Scale the font
-        font.getData().setScale(0.55f);
+        scoreFont.getData().setScale(0.55f);
 
+
+        // Title font
+        FreeTypeFontGenerator.FreeTypeFontParameter menuFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        menuFontParameter.size = 14;
+        menuFontParameter.borderWidth = 1.85f;
+        menuFontParameter.color = new Color(1,1,1,1f);
+        menuFontParameter.borderColor = new Color(0,0,0,1f);
+        //menuFontParameter.spaceX = 1;
+
+        menuFont = fontGenerator.generateFont(menuFontParameter);
+        // Scale the font
+        menuFont.getData().setScale(0.65f);
+
+        // Start game font
+        FreeTypeFontGenerator.FreeTypeFontParameter startGameFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        startGameFontParameter.size = 10;
+        startGameFontParameter.borderWidth = 1.85f;
+        startGameFontParameter.color = new Color(1,1,1,1f);
+        startGameFontParameter.borderColor = new Color(0,0,0,1f);
+        //menuFontParameter.spaceX = 1;
+
+        startGameFont = fontGenerator.generateFont(startGameFontParameter);
+        // Scale the font
+        startGameFont.getData().setScale(0.45f);
     }
 
     private void updateAndRenderScoreHUD()
     {
         String text = String.valueOf(currentScore);
         //String text = String.format("%03d",currentScore);
-        font.draw(batch,text,WORLD_WIDTH - font.getScaleX()*2,WORLD_HEIGHT-(font.getScaleY()*3),0, Align.right,false);
+        scoreFont.draw(batch,text,WORLD_WIDTH - scoreFont.getScaleX()*2,WORLD_HEIGHT-(scoreFont.getScaleY()*3),0, Align.right,false);
     }
 
     @Override

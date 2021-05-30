@@ -17,7 +17,7 @@ public class Rock {
     //float rockOffset;
     int WORLD_HEIGHT;
     int WORLD_WIDTH;
-    int yPositionInitialOffset;
+    int startingYPosition;
 
     final int X_POS_PADDING=5;
 
@@ -39,8 +39,13 @@ public class Rock {
         this.WORLD_WIDTH = WORLD_WIDTH;
 
         this.xPosition = getRandomXPos();
-        this.yPosition = WORLD_HEIGHT + yPositionInitialOffset;
+        this.startingYPosition = WORLD_HEIGHT + yPositionInitialOffset;
+        this.yPosition = startingYPosition;
+    }
 
+    public void resetPosition()
+    {
+        this.yPosition = startingYPosition;
     }
 
     public void draw(Batch batch)
