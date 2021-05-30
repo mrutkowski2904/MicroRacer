@@ -232,7 +232,7 @@ public class GameScreen implements Screen {
             }
         }
 
-        if((Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.ANY_KEY))&& menuActive)
+        if((Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.ANY_KEY))&& menuActive && menu.isInPlace())
         {
             startGame();
         }
@@ -334,7 +334,7 @@ public class GameScreen implements Screen {
         FreeTypeFontGenerator.FreeTypeFontParameter menuFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         menuFontParameter.size = 14;
-        menuFontParameter.borderWidth = 1.85f;
+        menuFontParameter.borderWidth = 1.5f;
         menuFontParameter.color = new Color(1,1,1,1f);
         menuFontParameter.borderColor = new Color(0,0,0,1f);
         //menuFontParameter.spaceX = 1;
@@ -387,6 +387,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        System.exit(0);
     }
 
     @Override

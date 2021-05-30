@@ -8,6 +8,8 @@ public class GameMenu {
     float xPosition, yPosition;
     float startingYPosition;
 
+    float targetYPosition;
+
     int WORLD_HEIGHT;
     int WORLD_WIDTH;
 
@@ -22,6 +24,8 @@ public class GameMenu {
         this.WORLD_WIDTH = WORLD_WIDTH;
         this.titleFont = titleFont;
         this.normalFont = normalFont;
+
+        targetYPosition = WORLD_HEIGHT*3/4;
     }
 
     public void resetPosition()
@@ -29,10 +33,18 @@ public class GameMenu {
         this.yPosition = startingYPosition;
     }
 
+    public boolean isInPlace()
+    {
+        if(yPosition <= targetYPosition)
+        {
+            return true;
+        }
+        return false;
+    }
 
     public void draw(Batch batch, float backgroundMaxScrollingSpeed, float deltaTime)
     {
-        if(this.yPosition+titleFont.getScaleY() > WORLD_HEIGHT*3/4)
+        if(this.yPosition+titleFont.getScaleY() > targetYPosition)
         {
             //this.yPosition = WORLD_HEIGHT;
             this.yPosition -= deltaTime * backgroundMaxScrollingSpeed*2;
