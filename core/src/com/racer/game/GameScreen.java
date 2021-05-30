@@ -4,13 +4,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -46,7 +50,7 @@ public class GameScreen implements Screen {
     private final float TOTAL_ANIMATION_TIME = 0.5f;
 
     // gameplay
-    private int currentScore;
+    private int currentScore = 0;
     private boolean gameActive = true;
 
     // game objects
@@ -55,6 +59,11 @@ public class GameScreen implements Screen {
     private Ufo ufo;
     private Car car;
     private LinkedList<Explosion> explosions;
+
+    // Score HUD
+    BitmapFont font;
+    float hudVerticalMargin,hudLeftX,hudRightX,hudCenterX;
+
 
     GameScreen(){
         camera = new OrthographicCamera();
@@ -91,6 +100,8 @@ public class GameScreen implements Screen {
         explosions = new LinkedList<>();
 
         batch = new SpriteBatch();
+
+        prepareScoreHUD();
     }
 
     @Override
@@ -110,6 +121,7 @@ public class GameScreen implements Screen {
 
             // collision
             detectColision(deltaTime);
+
         }
 
         // rocks
@@ -120,6 +132,13 @@ public class GameScreen implements Screen {
         // other effects
         ufo.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
         renderExplosions(deltaTime);
+
+        // Top layer
+        if(gameActive)
+        {
+            // score HUD
+            updateAndRenderScoreHUD();
+        }
 
         batch.end();
     }
@@ -203,6 +222,11 @@ public class GameScreen implements Screen {
 
     }
 
+    private void updateScore()
+    {
+        currentScore += 1;
+    }
+
     private void detectColision(float deltaTime)
     {
         for (Rock rock: rocks) {
@@ -235,12 +259,42 @@ public class GameScreen implements Screen {
             if(backgroundOffsets[layer] > WORLD_HEIGHT)
             {
                 backgroundOffsets[layer] = 0;
+
+                if(gameActive)
+                {
+                    updateScore();
+                }
             }
 
             // upper and lower part
             batch.draw(backgrounds[layer],0,-backgroundOffsets[layer],WORLD_WIDTH,WORLD_HEIGHT);
             batch.draw(backgrounds[layer],0,-backgroundOffsets[layer] + WORLD_HEIGHT ,WORLD_WIDTH,WORLD_HEIGHT);
         }
+    }
+
+    private void prepareScoreHUD()
+    {
+        // Creating bitmap font from file
+        FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
+        FreeTypeFontGenerator.FreeTypeFontParameter fontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
+
+        fontParameter.size = 14;
+        fontParameter.borderWidth = 1.85f;
+        fontParameter.color = new Color(1,1,1,0.9f);
+        fontParameter.borderColor = new Color(0,0,0,0.9f);
+        fontParameter.spaceX = 1;
+
+        font = fontGenerator.generateFont(fontParameter);
+        // Scale the font
+        font.getData().setScale(0.55f);
+
+    }
+
+    private void updateAndRenderScoreHUD()
+    {
+        String text = String.valueOf(currentScore);
+        //String text = String.format("%03d",currentScore);
+        font.draw(batch,text,WORLD_WIDTH - font.getScaleX()*2,WORLD_HEIGHT-(font.getScaleY()*3),0, Align.right,false);
     }
 
     @Override

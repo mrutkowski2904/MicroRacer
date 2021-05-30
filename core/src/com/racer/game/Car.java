@@ -27,7 +27,7 @@ public class Car {
 
     public boolean touchesRock(Rectangle rockRectangle)
     {
-        Rectangle carRect = new Rectangle(this.xPosition,this.yPosition,this.width,this.height);
+        Rectangle carRect = new Rectangle(this.xPosition+this.width/4,this.yPosition,this.width/2,this.height*2/3);
         return carRect.overlaps(rockRectangle);
     }
 
