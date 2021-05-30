@@ -9,12 +9,15 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 
 public class GameScreen implements Screen {
 
@@ -29,6 +32,9 @@ public class GameScreen implements Screen {
     private TextureRegion[] backgrounds;
     private TextureRegion playerCarTextureRegion, rockTextureRegion,ufoTextureRegion;
 
+    // initialize explosion texture
+    private Texture explosionTexture;
+
     // timing stuff
     private float[] backgroundOffsets={0};
     private float backgroundMaxScrollingSpeed;
@@ -37,14 +43,18 @@ public class GameScreen implements Screen {
     private final int WORLD_WIDTH = 72;
     private final int WORLD_HEIGHT = 128;
     private final float TOUCH_MOVEMENT_THRESHOLD = 1f;
+    private final float TOTAL_ANIMATION_TIME = 0.5f;
 
+    // gameplay
+    private int currentScore;
+    private boolean gameActive = true;
 
     // game objects
     //private Rock rock1;
     private List<Rock> rocks;
     private Ufo ufo;
     private Car car;
-
+    private LinkedList<Explosion> explosions;
 
     GameScreen(){
         camera = new OrthographicCamera();
@@ -53,11 +63,11 @@ public class GameScreen implements Screen {
         // set texture atlas
         textureAtlas = new TextureAtlas("images.atlas");
 
+        // explosion texture
+        explosionTexture = new Texture("explosion.png");
+
         backgrounds = new TextureRegion[1];
         backgrounds[0] = textureAtlas.findRegion("sandRoad");
-
-
-        backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/2;
 
         // initialize texture regions
         rockTextureRegion = textureAtlas.findRegion("rock1");
@@ -66,6 +76,8 @@ public class GameScreen implements Screen {
 
         playerCarTextureRegion.flip(false,true);
         ufoTextureRegion.flip(true,false);
+
+        backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/2;
 
         // game objects setup
         rocks = new ArrayList<Rock>();
@@ -76,6 +88,7 @@ public class GameScreen implements Screen {
 
         car = new Car(90,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
         ufo = new Ufo(-WORLD_WIDTH*2,WORLD_HEIGHT*4/6,35,35,WORLD_HEIGHT,WORLD_WIDTH,ufoTextureRegion);
+        explosions = new LinkedList<>();
 
         batch = new SpriteBatch();
     }
@@ -89,24 +102,46 @@ public class GameScreen implements Screen {
         // background
         renderBackground(deltaTime);
 
+        // game active
+        if(gameActive)
+        {
+            // player's car
+            car.draw(batch);
+
+            // collision
+            detectColision(deltaTime);
+        }
+
         // rocks
         for (Rock r: rocks) {
             r.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
         }
 
-        // player's car
-        car.draw(batch);
-
-
         // other effects
         ufo.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
-
-        // explosions
-
-
-        detectColision();
+        renderExplosions(deltaTime);
 
         batch.end();
+    }
+
+    private void renderExplosions(float deltaTime)
+    {
+
+        ListIterator<Explosion> explosionListIterator = explosions.listIterator();
+        while (explosionListIterator.hasNext())
+        {
+            Explosion explosion = explosionListIterator.next();
+            explosion.update(deltaTime);
+            if(explosion.isFinished())
+            {
+                explosionListIterator.remove();
+            }
+            else
+            {
+                explosion.draw(batch);
+            }
+
+        }
     }
 
     private void detectInput(float deltaTime) {
@@ -116,59 +151,73 @@ public class GameScreen implements Screen {
         leftLimit = -car.getBoundingBox().x;
         rightLimit = WORLD_WIDTH - car.getBoundingBox().x - car.width;
 
-        if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit>0)
+        // Game controls
+        if(gameActive)
         {
-            float xChange = car.movementSpeed*deltaTime;
-            xChange = Math.min(xChange,rightLimit);
-            car.translate(xChange,0f);
-        }
-
-        if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit<0)
-        {
-            float xChange = car.movementSpeed*deltaTime;
-            xChange = Math.max(xChange,leftLimit);
-            car.translate(-xChange,0f);
-        }
-
-        //touch and mouse
-        if(Gdx.input.isTouched())
-        {
-            // get screen position
-            float xTouchPixels = Gdx.input.getX();
-            float yTouchPixels = Gdx.input.getY();
-
-            // convert screen position to world units
-            Vector2 touchPoint = new Vector2(xTouchPixels,yTouchPixels);
-            Vector2 touchInWorld = viewport.unproject(touchPoint);
-            Vector2 carCenter = new Vector2(car.xPosition + car.width/2,car.yPosition+car.height/2);
-
-
-            // right
-            if(carCenter.x+TOUCH_MOVEMENT_THRESHOLD<touchInWorld.x && rightLimit>0)
+            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) && rightLimit>0)
             {
                 float xChange = car.movementSpeed*deltaTime;
                 xChange = Math.min(xChange,rightLimit);
                 car.translate(xChange,0f);
             }
 
-            // left
-            if(carCenter.x-TOUCH_MOVEMENT_THRESHOLD>touchInWorld.x && leftLimit<0)
+            if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit<0)
             {
                 float xChange = car.movementSpeed*deltaTime;
                 xChange = Math.max(xChange,leftLimit);
                 car.translate(-xChange,0f);
             }
 
+            //touch and mouse
+            if(Gdx.input.isTouched())
+            {
+                // get screen position
+                float xTouchPixels = Gdx.input.getX();
+                float yTouchPixels = Gdx.input.getY();
 
+                // convert screen position to world units
+                Vector2 touchPoint = new Vector2(xTouchPixels,yTouchPixels);
+                Vector2 touchInWorld = viewport.unproject(touchPoint);
+                Vector2 carCenter = new Vector2(car.xPosition + car.width/2,car.yPosition+car.height/2);
+
+
+                // right
+                if(carCenter.x+TOUCH_MOVEMENT_THRESHOLD<touchInWorld.x && rightLimit>0)
+                {
+                    float xChange = car.movementSpeed*deltaTime;
+                    xChange = Math.min(xChange,rightLimit);
+                    car.translate(xChange,0f);
+                }
+
+                // left
+                if(carCenter.x-TOUCH_MOVEMENT_THRESHOLD>touchInWorld.x && leftLimit<0)
+                {
+                    float xChange = car.movementSpeed*deltaTime;
+                    xChange = Math.max(xChange,leftLimit);
+                    car.translate(-xChange,0f);
+                }
+
+
+            }
         }
+
     }
 
-    private void detectColision()
+    private void detectColision(float deltaTime)
     {
         for (Rock rock: rocks) {
+
+            // Car hits rock
             if(car.touchesRock(rock.getBoundingBox()))
             {
-                System.out.println("Player hits rock");
+                Rectangle explostionBox = new Rectangle();
+                explostionBox.setWidth(car.width*2);
+                explostionBox.setHeight(car.height*2);
+                explostionBox.setX(car.xPosition-car.width/2);
+                explostionBox.setY(car.yPosition-car.height/2);
+
+                explosions.add(new Explosion(explosionTexture,explostionBox,TOTAL_ANIMATION_TIME));
+                gameActive = false;
             }
         }
     }
