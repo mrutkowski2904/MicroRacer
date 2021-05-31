@@ -3,6 +3,8 @@ package com.racer.game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -63,9 +65,16 @@ public class GameScreen implements Screen {
     private LinkedList<Explosion> explosions;
 
     // game stuff
-    BitmapFont scoreFont;
-    BitmapFont menuFont;
-    BitmapFont startGameFont;
+    private BitmapFont scoreFont;
+    private BitmapFont menuFont;
+    private BitmapFont startGameFont;
+
+    // Audio
+    private final float musicVol = 0.13f;
+    private final float sountEffectsVol = 0.25f;
+    private Music music;
+    private Sound gameStartSound;
+    private Sound explosionSound;
 
     GameMenu menu;
 
@@ -93,8 +102,16 @@ public class GameScreen implements Screen {
 
         backgroundMaxScrollingSpeed = ((float)WORLD_HEIGHT)/2;
 
+        music = Gdx.audio.newMusic(Gdx.files.internal("gameMusic.wav"));
+        music.setLooping(true);
+        music.setVolume(musicVol);
+        music.play();
+
+        gameStartSound = Gdx.audio.newSound(Gdx.files.internal("gameStart.wav"));
+        explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.wav"));
+
         // game objects setup
-        rocks = new ArrayList<Rock>();
+        rocks = new ArrayList<>();
         rocks.add(new Rock(WORLD_HEIGHT*3/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
         rocks.add(new Rock(WORLD_HEIGHT*2/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
         rocks.add(new Rock(WORLD_HEIGHT*1/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
@@ -108,7 +125,6 @@ public class GameScreen implements Screen {
 
 
         menu = new GameMenu(WORLD_WIDTH/2,WORLD_HEIGHT*1.5f,WORLD_HEIGHT,WORLD_WIDTH,menuFont, startGameFont);
-
     }
 
     @Override
@@ -248,6 +264,7 @@ public class GameScreen implements Screen {
             r.resetPosition();
         }
         car.resetPosition();
+        gameStartSound.play(sountEffectsVol);
     }
 
     public void stopGame()
@@ -276,6 +293,7 @@ public class GameScreen implements Screen {
                 explostionBox.setY(car.yPosition-car.height/2);
 
                 explosions.add(new Explosion(explosionTexture,explostionBox,TOTAL_ANIMATION_TIME));
+                explosionSound.play(sountEffectsVol);
 
                 // replace later with after crash screen
                 // todo, save score
@@ -313,7 +331,7 @@ public class GameScreen implements Screen {
 
     private void prepareFont()
     {
-        FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
+        FreeTypeFontGenerator fontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("font2.ttf"));
 
         // Game font
         // Creating bitmap font from file
@@ -327,26 +345,28 @@ public class GameScreen implements Screen {
 
         scoreFont = fontGenerator.generateFont(fontParameter);
         // Scale the font
-        scoreFont.getData().setScale(0.55f);
+        scoreFont.getData().setScale(0.43f);
 
 
         // Title font
         FreeTypeFontGenerator.FreeTypeFontParameter menuFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         menuFontParameter.size = 14;
-        menuFontParameter.borderWidth = 1.5f;
+        menuFontParameter.borderWidth = 1.85f;
         menuFontParameter.color = new Color(1,1,1,1f);
         menuFontParameter.borderColor = new Color(0,0,0,1f);
-        //menuFontParameter.spaceX = 1;
+        //menuFontParameter.spaceX = 2;
 
         menuFont = fontGenerator.generateFont(menuFontParameter);
         // Scale the font
-        menuFont.getData().setScale(0.65f);
+        menuFont.getData().setScale(0.5f);
 
+
+        //menuFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         // Start game font
         FreeTypeFontGenerator.FreeTypeFontParameter startGameFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
-        startGameFontParameter.size = 10;
+        startGameFontParameter.size = 14;
         startGameFontParameter.borderWidth = 1.85f;
         startGameFontParameter.color = new Color(1,1,1,1f);
         startGameFontParameter.borderColor = new Color(0,0,0,1f);
@@ -354,14 +374,14 @@ public class GameScreen implements Screen {
 
         startGameFont = fontGenerator.generateFont(startGameFontParameter);
         // Scale the font
-        startGameFont.getData().setScale(0.45f);
+        startGameFont.getData().setScale(0.3f);
     }
 
     private void updateAndRenderScoreHUD()
     {
         String text = String.valueOf(currentScore);
         //String text = String.format("%03d",currentScore);
-        scoreFont.draw(batch,text,WORLD_WIDTH - scoreFont.getScaleX()*2,WORLD_HEIGHT-(scoreFont.getScaleY()*3),0, Align.right,false);
+        scoreFont.draw(batch,text,WORLD_WIDTH - scoreFont.getScaleX()*3,WORLD_HEIGHT-(scoreFont.getScaleY()*4),0, Align.right,false);
     }
 
     @Override
@@ -387,6 +407,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        music.dispose();
         System.exit(0);
     }
 
