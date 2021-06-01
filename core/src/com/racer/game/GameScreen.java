@@ -56,9 +56,10 @@ public class GameScreen implements Screen {
 
     // gameplay
     private int currentScore = 0;
+    private int bestScore;
     private boolean gameActive = false;
     private boolean menuActive = true;
-
+    private boolean scoreMenuActive = false;
 
     // game objects
     //private Rock rock1;
@@ -81,6 +82,7 @@ public class GameScreen implements Screen {
     private Sound explosionSound;
 
     GameMenu menu;
+    ScoreMenu scoreMenu;
 
     GameScreen(){
         camera = new OrthographicCamera();
@@ -114,6 +116,8 @@ public class GameScreen implements Screen {
         gameStartSound = Gdx.audio.newSound(Gdx.files.internal("gameStart.wav"));
         explosionSound = Gdx.audio.newSound(Gdx.files.internal("explosion.wav"));
 
+        bestScore = loadPersonalBest();
+
         // game objects setup
         rocks = new ArrayList<>();
         rocks.add(new Rock(WORLD_HEIGHT*3/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
@@ -129,6 +133,7 @@ public class GameScreen implements Screen {
 
 
         menu = new GameMenu(WORLD_WIDTH/2,WORLD_HEIGHT*1.5f,WORLD_HEIGHT,WORLD_WIDTH,menuFont, startGameFont);
+        scoreMenu = new ScoreMenu(WORLD_WIDTH/2,WORLD_HEIGHT*1.5f,WORLD_HEIGHT,WORLD_WIDTH, menuFont, startGameFont);
     }
 
     @Override
@@ -167,6 +172,12 @@ public class GameScreen implements Screen {
         {
             // score HUD
             updateAndRenderScoreHUD();
+        }
+
+        // After crash menu
+        if(scoreMenuActive)
+        {
+            scoreMenu.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
         }
 
         // Menu
@@ -256,7 +267,7 @@ public class GameScreen implements Screen {
                 // convert screen position to world units
                 Vector2 touchPoint = new Vector2(xTouchPixels,yTouchPixels);
                 Vector2 touchInWorld = viewport.unproject(touchPoint);
-                Vector2 carCenter = new Vector2(car.xPosition + car.width/2,car.yPosition+car.height/2);
+                //Vector2 carCenter = new Vector2(car.xPosition + car.width/2,car.yPosition+car.height/2);
 
 
                 // right
@@ -267,6 +278,7 @@ public class GameScreen implements Screen {
                     xChange = Math.min(xChange,rightLimit);
                     car.translate(xChange,0f);
                     car.tiltRight(deltaTime);
+                    makeSmoke();
                 }
 
                 // left
@@ -277,6 +289,7 @@ public class GameScreen implements Screen {
                     xChange = Math.max(xChange,leftLimit);
                     car.translate(-xChange,0f);
                     car.tiltLeft(deltaTime);
+                    makeSmoke();
                 }
 
 
@@ -290,9 +303,18 @@ public class GameScreen implements Screen {
             }
         }
 
-        if((Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.ANY_KEY))&& menuActive && menu.isInPlace())
+        else if(!gameActive && (Gdx.input.isTouched() || Gdx.input.isKeyPressed(Input.Keys.ANY_KEY)))
         {
-            startGame();
+            //startGame();
+            if(menuActive && menu.isInPlace())
+            {
+                startGame();
+            }
+            else if(scoreMenuActive && scoreMenu.isInPlace())
+            {
+                menuActive = true;
+                scoreMenuActive = false;
+            }
         }
 
     }
@@ -301,6 +323,7 @@ public class GameScreen implements Screen {
     {
         //menu.resetPosition();
         menuActive = false;
+        scoreMenuActive = false;
         gameActive = true;
         for (Rock r: rocks) {
             r.resetPosition();
@@ -309,10 +332,27 @@ public class GameScreen implements Screen {
         gameStartSound.play(sountEffectsVol);
     }
 
+    public void saveBestScore(int newBest)
+    {
+        System.out.println("New personal best: "+newBest);
+    }
+
     public void stopGame()
     {
+        // replace later with after crash screen
+        // todo, save score
+        if(currentScore>bestScore)
+        {
+            bestScore = currentScore;
+            saveBestScore(bestScore);
+        }
+        scoreMenu.setScores(bestScore,currentScore);
+        currentScore = 0;
+
         menu.resetPosition();
-        menuActive = true;
+        scoreMenu.resetPosition();
+        //menuActive = true;
+        scoreMenuActive = true;
         gameActive = false;
     }
 
@@ -337,9 +377,6 @@ public class GameScreen implements Screen {
                 explosions.add(new Explosion(explosionTexture,explostionBox,TOTAL_ANIMATION_TIME));
                 explosionSound.play(sountEffectsVol);
 
-                // replace later with after crash screen
-                // todo, save score
-                currentScore = 0;
                 stopGame();
             }
         }
@@ -360,6 +397,7 @@ public class GameScreen implements Screen {
             smokeBox.setY(car.yPosition-smokeHeight/1.5f);
 
             carSmokeList.add(new Smoke(smokeTexture,smokeBox,TOTAL_ANIMATION_TIME*0.75f,backgroundMaxScrollingSpeed*0.4f));
+            smokeCounter=0;
         }
         smokeCounter++;
     }
@@ -443,6 +481,11 @@ public class GameScreen implements Screen {
         String text = String.valueOf(currentScore);
         //String text = String.format("%03d",currentScore);
         scoreFont.draw(batch,text,WORLD_WIDTH - scoreFont.getScaleX()*3,WORLD_HEIGHT-(scoreFont.getScaleY()*4),0, Align.right,false);
+    }
+
+    private int loadPersonalBest()
+    {
+        return 0;
     }
 
     @Override

@@ -54,6 +54,6 @@ public class GameMenu {
         String startGameText = "Tap anywhere to start";
         //String text = String.format("%03d",currentScore);
         titleFont.draw(batch,titleText,WORLD_WIDTH/2,this.yPosition,0, Align.center,false);
-        normalFont.draw(batch,startGameText,0,this.yPosition-(13),WORLD_WIDTH, Align.center,true);
+        normalFont.draw(batch,startGameText,0,this.yPosition-13,WORLD_WIDTH, Align.center,true);
     }
 }
