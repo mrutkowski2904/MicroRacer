@@ -142,6 +142,7 @@ public class GameScreen implements Screen {
             // player's car
             car.draw(batch);
 
+
             // collision
             detectColision(deltaTime);
 
@@ -206,6 +207,8 @@ public class GameScreen implements Screen {
                 float xChange = car.movementSpeed*deltaTime;
                 xChange = Math.min(xChange,rightLimit);
                 car.translate(xChange,0f);
+
+                car.tiltRight(deltaTime);
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit<0)
@@ -213,6 +216,9 @@ public class GameScreen implements Screen {
                 float xChange = car.movementSpeed*deltaTime;
                 xChange = Math.max(xChange,leftLimit);
                 car.translate(-xChange,0f);
+
+                // tilt the car
+                car.tiltLeft(deltaTime);
             }
 
             //touch and mouse
@@ -234,6 +240,7 @@ public class GameScreen implements Screen {
                     float xChange = car.movementSpeed*deltaTime;
                     xChange = Math.min(xChange,rightLimit);
                     car.translate(xChange,0f);
+                    car.tiltRight(deltaTime);
                 }
 
                 // left
@@ -242,9 +249,17 @@ public class GameScreen implements Screen {
                     float xChange = car.movementSpeed*deltaTime;
                     xChange = Math.max(xChange,leftLimit);
                     car.translate(-xChange,0f);
+                    car.tiltLeft(deltaTime);
                 }
 
 
+            }
+
+            // no key pressed and no screen touched
+            if(!Gdx.input.isKeyPressed(Input.Keys.ANY_KEY) && !Gdx.input.isTouched())
+            {
+                // tilt to default position
+                car.tiltToNormal(deltaTime);
             }
         }
 

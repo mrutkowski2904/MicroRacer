@@ -15,6 +15,15 @@ public class Car {
 
     float startingXPosition;
 
+    // for turning visuals
+    private float turningSpeed = 100f;
+    private float centeringSpeed = 130f;
+    private final float maxTilt = 10f;
+
+    // how close to the initial position tilt has to be, to reset it without animation
+    private final float resetTiltThreshold = 2f;
+    float rotation = 0.0f;
+
     // graphics information
     TextureRegion carTextureRegion;
 
@@ -57,6 +66,63 @@ public class Car {
 
     public void draw(Batch batch)
     {
-        batch.draw(carTextureRegion,xPosition,yPosition,width,height);
+        //batch.draw(carTextureRegion,xPosition,yPosition,width,height);
+        batch.draw(carTextureRegion,xPosition,yPosition,width,height,width,height,1f,1f,rotation);
+    }
+
+    public void tiltLeft(float deltaTime)
+    {
+        if(rotation<maxTilt)
+        {
+            this.rotation += deltaTime*turningSpeed;
+        }
+
+    }
+
+    public void tiltRight(float deltaTime)
+    {
+        if(Math.abs(rotation)<maxTilt)
+        {
+            this.rotation -= deltaTime*turningSpeed;
+        }
+
+    }
+
+    public void tiltToNormal(float deltaTime)
+    {
+        // car centered - skip
+        if(rotation == 0)
+        {
+            return;
+        }
+
+        // car nearly centered - center skip animation
+
+        if(Math.abs(rotation)<resetTiltThreshold)
+        {
+            rotation = 0;
+            return;
+        }
+
+
+        // car titled right
+        if(rotation < 0)
+        {
+            //while (Math.abs(rotation)>resetTiltThreshold)
+            //{
+                rotation += centeringSpeed * deltaTime;
+            //}
+            //rotation = 0;
+        }
+
+        // car tilted left
+        else if (rotation > 0)
+        {
+            //while (Math.abs(rotation)>resetTiltThreshold)
+            //{
+                rotation -= centeringSpeed * deltaTime;
+            //}
+            //rotation = 0;
+        }
     }
 }
