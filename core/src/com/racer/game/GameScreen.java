@@ -2,6 +2,7 @@ package com.racer.game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
@@ -57,6 +58,7 @@ public class GameScreen implements Screen {
     // gameplay
     private int currentScore = 0;
     private int bestScore;
+    Preferences preferences = Gdx.app.getPreferences("game preferences");
     private boolean gameActive = false;
     private boolean menuActive = true;
     private boolean scoreMenuActive = false;
@@ -64,6 +66,7 @@ public class GameScreen implements Screen {
     // game objects
     //private Rock rock1;
     private List<Rock> rocks;
+    private final int rockCount = 5;
     private Ufo ufo;
     private Car car;
     private LinkedList<Explosion> explosions;
@@ -75,8 +78,8 @@ public class GameScreen implements Screen {
     private BitmapFont startGameFont;
 
     // Audio
-    private final float musicVol = 0.13f;
-    private final float sountEffectsVol = 0.25f;
+    private final float musicVol = 0.7f;
+    private final float sountEffectsVol = 1f;
     private Music music;
     private Sound gameStartSound;
     private Sound explosionSound;
@@ -120,10 +123,10 @@ public class GameScreen implements Screen {
 
         // game objects setup
         rocks = new ArrayList<>();
-        rocks.add(new Rock(WORLD_HEIGHT*3/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
-        rocks.add(new Rock(WORLD_HEIGHT*2/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
-        rocks.add(new Rock(WORLD_HEIGHT*1/4,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
-        rocks.add(new Rock(0,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
+        for(int i=0;i<rockCount;i++)
+        {
+            rocks.add(new Rock(WORLD_HEIGHT*i/rockCount,12,12,rockTextureRegion,WORLD_WIDTH,WORLD_HEIGHT));
+        }
 
         car = new Car(90,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
         ufo = new Ufo(-WORLD_WIDTH*2,WORLD_HEIGHT*5/7,35,35,WORLD_HEIGHT,WORLD_WIDTH,ufoTextureRegion);
@@ -334,7 +337,8 @@ public class GameScreen implements Screen {
 
     public void saveBestScore(int newBest)
     {
-        System.out.println("New personal best: "+newBest);
+        preferences.putInteger("highscore", newBest);
+        preferences.flush();
     }
 
     public void stopGame()
@@ -462,14 +466,14 @@ public class GameScreen implements Screen {
 
 
         //menuFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        // Start game font
+        // Start game font - normal font
         FreeTypeFontGenerator.FreeTypeFontParameter startGameFontParameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
 
         startGameFontParameter.size = 14;
         startGameFontParameter.borderWidth = 1.85f;
         startGameFontParameter.color = new Color(1,1,1,1f);
         startGameFontParameter.borderColor = new Color(0,0,0,1f);
-        menuFontParameter.spaceX = 2;
+        startGameFontParameter.spaceX = 0;
 
         startGameFont = fontGenerator.generateFont(startGameFontParameter);
         // Scale the font
@@ -485,7 +489,7 @@ public class GameScreen implements Screen {
 
     private int loadPersonalBest()
     {
-        return 0;
+        return preferences.getInteger("highscore");
     }
 
     @Override

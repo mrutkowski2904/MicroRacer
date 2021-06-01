@@ -2,6 +2,7 @@ package com.racer.game;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.BitmapFontCache;
 import com.badlogic.gdx.utils.Align;
 
 public class ScoreMenu {
@@ -52,12 +53,27 @@ public class ScoreMenu {
         bigFont.draw(batch,message,0,this.yPosition,WORLD_WIDTH, Align.center,true);
 
         normalFont.draw(batch,currentScoreMsg,0,this.yPosition-13,WORLD_WIDTH, Align.center,true);
-        normalFont.draw(batch,String.valueOf(currentScore),0,this.yPosition-19,WORLD_WIDTH, Align.center,true);
+        normalFont.draw(batch,fontBugWorkaroundFix(currentScore),0,this.yPosition-19,WORLD_WIDTH, Align.center,true);
 
         normalFont.draw(batch,yourBestScoreMsg,0,this.yPosition-26,WORLD_WIDTH, Align.center,true);
-        normalFont.draw(batch,String.valueOf(bestScore),0,this.yPosition-32,WORLD_WIDTH, Align.center,true);
+        normalFont.draw(batch,fontBugWorkaroundFix(bestScore),0,this.yPosition-32,WORLD_WIDTH, Align.center,true);
 
         normalFont.draw(batch,instruction,0,this.yPosition-45,WORLD_WIDTH, Align.center,true);
+    }
+
+    // digits of two digit number, overlap with this font at that size
+    // changing font size messes spacing
+    private String fontBugWorkaroundFix(int num)
+    {
+        if(num>9 && num<100)
+        {
+            String tmp = String.valueOf(num);
+            return tmp.charAt(0)+" "+tmp.charAt(1);
+        }
+        else
+        {
+            return String.valueOf(num);
+        }
     }
 
     public void resetPosition()
