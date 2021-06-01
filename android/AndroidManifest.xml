@@ -4,10 +4,10 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_tyre"
         android:isGame="true"
         android:appCategory="game"
-        android:label="@string/app_name"
+        android:label="Micro Racer"
         android:theme="@style/GdxTheme" >
         <activity
             android:name="com.racer.game.AndroidLauncher"

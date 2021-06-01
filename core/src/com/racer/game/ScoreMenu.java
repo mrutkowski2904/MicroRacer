@@ -44,7 +44,7 @@ public class ScoreMenu {
             this.yPosition -= deltaTime * backgroundMaxScrollingSpeed*2;
         }
 
-        String message = "You crashed!";
+        String message = "You crashed";
         String currentScoreMsg = "Your score:";
         String yourBestScoreMsg = "Your best score:";
         String instruction = "Tap anywhere to continue";

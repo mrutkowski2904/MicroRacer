@@ -454,11 +454,11 @@ public class GameScreen implements Screen {
         menuFontParameter.borderWidth = 1.85f;
         menuFontParameter.color = new Color(1,1,1,1f);
         menuFontParameter.borderColor = new Color(0,0,0,1f);
-        //menuFontParameter.spaceX = 2;
+        menuFontParameter.spaceX = 1;
 
         menuFont = fontGenerator.generateFont(menuFontParameter);
         // Scale the font
-        menuFont.getData().setScale(0.5f);
+        menuFont.getData().setScale(0.43f);
 
 
         //menuFont.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -469,11 +469,11 @@ public class GameScreen implements Screen {
         startGameFontParameter.borderWidth = 1.85f;
         startGameFontParameter.color = new Color(1,1,1,1f);
         startGameFontParameter.borderColor = new Color(0,0,0,1f);
-        //menuFontParameter.spaceX = 1;
+        menuFontParameter.spaceX = 2;
 
         startGameFont = fontGenerator.generateFont(startGameFontParameter);
         // Scale the font
-        startGameFont.getData().setScale(0.3f);
+        startGameFont.getData().setScale(0.23f);
     }
 
     private void updateAndRenderScoreHUD()
