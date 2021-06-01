@@ -38,8 +38,11 @@ public class GameScreen implements Screen {
     private TextureRegion[] backgrounds;
     private TextureRegion playerCarTextureRegion, rockTextureRegion,ufoTextureRegion;
 
-    // initialize explosion texture
+    // initialize explosion and smoke texture
     private Texture explosionTexture;
+    private Texture smokeTexture;
+    private final int smokeness = 4; // biggner number -> less smoke
+    private int smokeCounter = 0;
 
     // timing stuff
     private float[] backgroundOffsets={0};
@@ -63,6 +66,7 @@ public class GameScreen implements Screen {
     private Ufo ufo;
     private Car car;
     private LinkedList<Explosion> explosions;
+    private LinkedList<Smoke> carSmokeList;
 
     // game stuff
     private BitmapFont scoreFont;
@@ -86,7 +90,7 @@ public class GameScreen implements Screen {
         // set texture atlas
         textureAtlas = new TextureAtlas("images.atlas");
 
-        // explosion texture
+        smokeTexture = new Texture("smoke.png");
         explosionTexture = new Texture("explosion.png");
 
         backgrounds = new TextureRegion[1];
@@ -120,7 +124,7 @@ public class GameScreen implements Screen {
         car = new Car(90,WORLD_WIDTH/2,WORLD_HEIGHT*1/6,12,18,playerCarTextureRegion);
         ufo = new Ufo(-WORLD_WIDTH*2,WORLD_HEIGHT*5/7,35,35,WORLD_HEIGHT,WORLD_WIDTH,ufoTextureRegion);
         explosions = new LinkedList<>();
-
+        carSmokeList = new LinkedList<>();
         batch = new SpriteBatch();
 
 
@@ -155,6 +159,7 @@ public class GameScreen implements Screen {
 
         // other effects
         ufo.draw(batch,backgroundMaxScrollingSpeed,deltaTime);
+        renderSmoke(deltaTime);
         renderExplosions(deltaTime);
 
         // Top layer
@@ -192,6 +197,24 @@ public class GameScreen implements Screen {
         }
     }
 
+    private void renderSmoke(float deltaTime)
+    {
+        ListIterator<Smoke> smokeListIterator = carSmokeList.listIterator();
+        while(smokeListIterator.hasNext())
+        {
+            Smoke smoke = smokeListIterator.next();
+            smoke.update(deltaTime);
+            if(smoke.isFinished())
+            {
+                smokeListIterator.remove();
+            }
+            else
+            {
+                smoke.draw(batch,deltaTime);
+            }
+        }
+    }
+
     private void detectInput(float deltaTime) {
 
         // keyboard
@@ -209,6 +232,7 @@ public class GameScreen implements Screen {
                 car.translate(xChange,0f);
 
                 car.tiltRight(deltaTime);
+                makeSmoke();
             }
 
             if(Gdx.input.isKeyPressed(Input.Keys.LEFT) && leftLimit<0)
@@ -219,6 +243,7 @@ public class GameScreen implements Screen {
 
                 // tilt the car
                 car.tiltLeft(deltaTime);
+                makeSmoke();
             }
 
             //touch and mouse
@@ -235,7 +260,8 @@ public class GameScreen implements Screen {
 
 
                 // right
-                if(carCenter.x+TOUCH_MOVEMENT_THRESHOLD<touchInWorld.x && rightLimit>0)
+                //if(carCenter.x+TOUCH_MOVEMENT_THRESHOLD<touchInWorld.x && rightLimit>0)
+                if(WORLD_WIDTH/2<=touchInWorld.x && rightLimit>0)
                 {
                     float xChange = car.movementSpeed*deltaTime;
                     xChange = Math.min(xChange,rightLimit);
@@ -244,7 +270,8 @@ public class GameScreen implements Screen {
                 }
 
                 // left
-                if(carCenter.x-TOUCH_MOVEMENT_THRESHOLD>touchInWorld.x && leftLimit<0)
+                //if(carCenter.x-TOUCH_MOVEMENT_THRESHOLD>touchInWorld.x && leftLimit<0)
+                if(WORLD_WIDTH/2>touchInWorld.x && leftLimit<0)
                 {
                     float xChange = car.movementSpeed*deltaTime;
                     xChange = Math.max(xChange,leftLimit);
@@ -316,6 +343,25 @@ public class GameScreen implements Screen {
                 stopGame();
             }
         }
+    }
+
+    private void makeSmoke()
+    {
+        if(smokeCounter % smokeness == 0)
+        {
+            Rectangle smokeBox = new Rectangle();
+
+            float smokeWidth = car.width*1.6f;
+            float smokeHeight = smokeWidth;
+
+            smokeBox.setWidth(smokeWidth);
+            smokeBox.setHeight(smokeHeight);
+            smokeBox.setX(car.xPosition+(car.width/2)-(smokeWidth/2));
+            smokeBox.setY(car.yPosition-smokeHeight/1.5f);
+
+            carSmokeList.add(new Smoke(smokeTexture,smokeBox,TOTAL_ANIMATION_TIME*0.75f,backgroundMaxScrollingSpeed*0.4f));
+        }
+        smokeCounter++;
     }
 
     private void renderBackground(float deltaTime){

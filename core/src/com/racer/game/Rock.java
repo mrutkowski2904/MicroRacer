@@ -33,7 +33,7 @@ public class Rock {
 
         this.width = width;
         this.height = height;
-        this.rockTextureRegion = rockTexture;
+        this.rockTextureRegion = new TextureRegion(rockTexture);
 
         this.WORLD_HEIGHT = WORLD_HEIGHT;
         this.WORLD_WIDTH = WORLD_WIDTH;
@@ -61,6 +61,7 @@ public class Rock {
         {
             this.yPosition = WORLD_HEIGHT;
             this.xPosition = getRandomXPos();
+            this.rockTextureRegion.flip(getRandomBool(),false);
         }
 
         batch.draw(rockTextureRegion,xPosition,yPosition,width,height);
@@ -78,5 +79,11 @@ public class Rock {
         int result = rand.nextInt(WORLD_WIDTH-(2*X_POS_PADDING));
         result+=X_POS_PADDING/2;
         return result;
+    }
+
+    private boolean getRandomBool()
+    {
+        Random rand = new Random();
+        return rand.nextBoolean();
     }
 }

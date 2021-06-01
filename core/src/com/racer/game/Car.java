@@ -40,7 +40,7 @@ public class Car {
     public boolean touchesRock(Rectangle rockRectangle)
     {
         // easy mode
-        Rectangle carRect = new Rectangle(this.xPosition+this.width/4,this.yPosition,this.width/2,this.height*2/3);
+        Rectangle carRect = new Rectangle(this.xPosition+this.width/4,this.yPosition,this.width/2,this.height*8/10);
 
         // hard mode (broken, one side collides when closer to rock)
         //Rectangle carRect = new Rectangle(this.xPosition,this.yPosition,this.width,this.height);
@@ -50,6 +50,7 @@ public class Car {
 
     public void resetPosition()
     {
+        rotation = 0f;
         xPosition = startingXPosition;
     }
 
@@ -81,7 +82,7 @@ public class Car {
 
     public void tiltRight(float deltaTime)
     {
-        if(Math.abs(rotation)<maxTilt)
+        if(-rotation<maxTilt)
         {
             this.rotation -= deltaTime*turningSpeed;
         }
